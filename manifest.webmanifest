@@ -1,0 +1,13 @@
+{
+  "name": "German in 90 Days",
+  "short_name": "German 90",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f4ef",
+  "theme_color": "#f6f4ef",
+  "description": "A speaking-first 90-day German curriculum with ChatGPT as oral coach.",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}
