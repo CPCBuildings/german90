@@ -1,350 +1,112 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#f6f4ef"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="German 90"/>
-<link rel="manifest" href="manifest.webmanifest"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
-<title>German in 90 Days</title>
-<style>
-:root{
-  --bg:#f6f4ef; --card:#ffffff; --ink:#1f2328; --muted:#697077;
-  --line:#ddd8cf; --accent:#8b3a2b; --accent2:#2d5f4f; --soft:#eee8de;
-}
-*{box-sizing:border-box}
-body{margin:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-header{padding:26px 18px 18px;max-width:1050px;margin:auto}
-h1{font-size:clamp(30px,5vw,52px);margin:0 0 6px;letter-spacing:-.03em}
-.subtitle{color:var(--muted);max-width:760px;line-height:1.45}
-main{max-width:1050px;margin:auto;padding:0 18px 56px}
-.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-@media(max-width:780px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 7px 24px rgba(0,0,0,.04)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-button,select,input{font:inherit}
-button{border:0;border-radius:12px;padding:10px 14px;background:var(--ink);color:#fff;cursor:pointer}
-button.secondary{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
-button.good{background:var(--accent2)}
-button.warn{background:var(--accent)}
-button:disabled{opacity:.45;cursor:not-allowed}
-select,input[type=number]{padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
-.progress{height:12px;background:var(--soft);border-radius:999px;overflow:hidden}
-.progress>div{height:100%;background:var(--accent2);width:0}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:13px}
-h2{font-size:21px;margin:0 0 12px} h3{font-size:17px;margin:18px 0 8px}
-.task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
-.task:first-of-type{border-top:0}
-.task input{margin-top:4px}
-small,.muted{color:var(--muted)}
-.big{font-size:26px;font-weight:700}
-.flash{min-height:160px;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;border-radius:16px;background:var(--soft);font-size:24px;cursor:pointer;user-select:none}
-.flash small{display:block;font-size:13px;margin-top:10px}
-.wordlist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.word{padding:9px 10px;background:var(--soft);border-radius:10px}
-@media(max-width:520px){.wordlist{grid-template-columns:1fr}}
-textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;resize:vertical}
-.promptbox{white-space:pre-wrap;background:#f3f0e9;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.45;max-height:260px;overflow:auto}
-hr{border:none;border-top:1px solid var(--line);margin:16px 0}
-#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:.2s}
-#toast.show{opacity:1}
-</style>
-</head>
-<body>
-<header>
-  <div class="badge">A1 → strong A2 / B1 bridge</div>
-  <h1>German in 90 Days</h1>
-  <div class="subtitle">A speaking-first curriculum for an English-speaking adult, with ChatGPT as your oral coach. No streak-chasing: recall, listening, and actual production.</div>
-</header>
-
-<main>
-  <div class="card" style="margin-bottom:16px">
-    <div class="row" style="justify-content:space-between">
-      <div>
-        <div class="muted">Overall progress</div>
-        <div class="big"><span id="doneCount">0</span> / 90 days</div>
-      </div>
-      <div class="row">
-        <label>Day <select id="daySelect"></select></label>
-        <button class="secondary" id="todayBtn">Go to current day</button>
-        <button class="warn" id="resetBtn">Reset progress</button>
-      </div>
-    </div>
-    <div class="progress" style="margin-top:12px"><div id="overallBar"></div></div>
-  </div>
-
-  <div class="grid">
-    <section class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div class="badge" id="phaseBadge"></div>
-          <h2 id="lessonTitle" style="margin-top:8px"></h2>
-        </div>
-        <div class="muted" id="timeLabel"></div>
-      </div>
-
-      <div id="tasks"></div>
-
-      <h3>Speaking mission</h3>
-      <div id="speakingPrompt"></div>
-      <textarea id="notes" placeholder="Optional notes after speaking. During the oral session, try not to script your answers first."></textarea>
-
-      <h3>ChatGPT oral session</h3>
-      <div class="muted" style="margin-bottom:8px">Open a ChatGPT voice conversation, paste the session brief below, then do the exercise by voice. The brief tells ChatGPT your exact level and how to correct you.</div>
-      <div id="chatPrompt" class="promptbox"></div>
-      <div class="row" style="margin-top:10px">
-        <button id="copyPromptBtn">Copy session brief</button>
-        <button id="openChatBtn" class="good">Open ChatGPT</button>
-        <button id="speakPromptBtn" class="secondary">🔊 Hear mission</button>
-        <button id="completeDayBtn" class="good">Mark day complete</button>
-      </div>
-    </section>
-
-    <aside class="card">
-      <h2>Today’s vocabulary</h2>
-      <div class="muted" style="margin-bottom:10px">Learn the German from English, not only German → English.</div>
-      <div class="wordlist" id="wordList"></div>
-
-      <hr>
-      <h2>Recall drill</h2>
-      <div id="flashCard" class="flash">Tap “Start drill”</div>
-      <div class="row" style="margin-top:10px">
-        <button id="startDrill">Start drill</button>
-        <button id="knowBtn" class="good" disabled>✓ Knew it</button>
-        <button id="missBtn" class="warn" disabled>× Missed it</button>
-      </div>
-      <div class="muted" id="drillStats" style="margin-top:8px"></div>
-
-      <hr>
-      <h2>5-minute speaking timer</h2>
-      <div class="big" id="timer">05:00</div>
-      <div class="row" style="margin-top:8px">
-        <button id="timerBtn" class="secondary">Start</button>
-        <button id="timerReset" class="secondary">Reset</button>
-      </div>
-    </aside>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <h2>How to use this course</h2>
-    <div class="muted" style="line-height:1.55">
-      Do the day’s lesson in order. Speak every German sentence aloud. For recall drills, look at the English and produce German before revealing the answer.
-      Six days each week introduce material; every seventh day is a review-and-speaking day. If you miss a day, continue where you left off rather than doubling up.
-      Aim for 45–60 minutes daily. Use the built-in ChatGPT oral-session brief several times per week; once a week, make the voice session 20–30 minutes and treat it as your weekly oral check-in.
-    </div>
-  </div>
-</main>
-
-<div id="toast"></div>
-
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#163c3b"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="German 90"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-192.png"><title>German 90 · Learn, Speak, Remember</title><style>
+:root{--bg:#f7f5ef;--card:#fff;--ink:#172b29;--muted:#536460;--border:#dddcd3;--accent:#166052;--light:#e7f1ed;--red:#a34237;--yellow:#f6ecd4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}header{background:#163c3b;color:#fff;padding:22px max(18px,calc((100vw - 1060px)/2));}h1{font-size:clamp(28px,4vw,40px);margin:0}header p{margin:4px 0;color:#d2e5df}main{max-width:1060px;margin:auto;padding:20px 18px 90px}.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px}@media(max-width:750px){.layout{grid-template-columns:1fr}.sidebar{order:2}}.panel{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:20px;margin-bottom:16px;box-shadow:0 4px 15px #17342b0a}h2{font-size:23px;margin:0 0 9px}h3{font-size:18px;margin:14px 0 7px}p{margin:7px 0 12px}.muted{color:var(--muted)}.tiny{font-size:13px}.tag{display:inline-block;background:var(--light);color:#165244;border-radius:99px;padding:3px 9px;font-size:12px;font-weight:700}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.spread{justify-content:space-between}button,select,input,textarea{font:inherit}button{border:0;border-radius:10px;background:var(--accent);color:white;padding:10px 14px;cursor:pointer;font-weight:600}button.secondary{background:#e7ede9;color:var(--ink)}button.outline{background:#fff;border:1px solid var(--border);color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text],textarea{border:1px solid #bdc7c2;border-radius:9px;padding:10px;background:#fff;width:100%;color:var(--ink)}textarea{min-height:90px}.navbtn{width:100%;text-align:left;margin:4px 0;background:#f1f3ef;color:var(--ink);font-weight:500}.navbtn.active{background:var(--accent);color:white}.meter{height:9px;background:#e7ede9;border-radius:10px;overflow:hidden}.meter>div{height:100%;background:#1d876f;transition:width .2s}.stage{padding:13px;border:1px solid var(--border);border-radius:12px;margin:12px 0}.wordgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:570px){.wordgrid{grid-template-columns:1fr}}.word{background:#f1f5f2;border-radius:10px;padding:10px}.word b{display:block}.word .row{margin-top:6px}.example{padding:12px;background:var(--light);border-radius:12px;margin:10px 0}.example strong{font-size:20px}.quiz{padding:15px;background:#f8faf8;border:1px solid var(--border);border-radius:13px}.quiz .question{font-size:21px;font-weight:700;margin:9px 0}.answer{margin-top:10px;padding:10px;border-radius:10px;background:var(--light)}.answer.bad{background:#f9e7e2}.hidden{display:none!important}.steps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.steps button{background:#edf2ef;color:var(--ink);font-size:13px;padding:8px 10px}.steps button.active{background:var(--accent);color:white}.prompt{white-space:pre-wrap;background:#f1f5f2;border:1px solid var(--border);border-radius:10px;padding:12px;max-height:270px;overflow:auto;font-size:13px}.callout{background:var(--yellow);padding:13px;border-radius:12px}.fine{font-size:13px;color:var(--muted)}.divider{border:0;border-top:1px solid var(--border);margin:16px 0}.daylist{max-height:340px;overflow:auto}.daylist button{font-size:13px;padding:8px}.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#172b29;color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:3}.big{font-size:26px;font-weight:700}a{color:#166052}details{margin-top:12px}summary{cursor:pointer;font-weight:600}
+</style></head><body><header><h1>German 90</h1><p>Start from zero. Learn → practice → speak with ChatGPT → review.</p></header><main><div class="panel row spread"><div><div class="tag">Your course</div><div class="big"><span id="completed">0</span> / 90 sessions</div><div class="tiny muted">15 units · six guided sessions per unit</div></div><div style="min-width:160px;flex:1;max-width:360px"><div class="meter"><div id="progress"></div></div><div class="row" style="margin-top:9px"><button class="secondary" id="continue">Continue course</button></div></div></div>
+<div class="layout"><aside class="sidebar"><div class="panel"><h3>Course navigator</h3><label class="tiny" for="day">Choose session</label><select id="day"></select><div id="unitlist" class="daylist" style="margin-top:12px"></div></div><div class="panel"><h3>Your learning record</h3><div id="reviewstats" class="muted tiny"></div><div class="row" style="margin-top:10px"><button id="export" class="secondary">Export backup</button><label class="secondary" style="padding:10px;border-radius:10px;cursor:pointer">Import backup<input type="file" accept="application/json" id="import" style="display:none"></label></div><p class="fine">Progress stays in this browser/device. Export a backup before switching devices or clearing Safari data.</p></div></aside>
+<div><section class="panel"><div class="row spread"><span class="tag" id="unitTag"></span><span class="muted tiny" id="sessionNumber"></span></div><h2 id="title" style="margin-top:10px"></h2><p id="goal" class="muted"></p><div class="steps" id="steps"></div><div id="stageContent"></div><div class="row spread" style="margin-top:17px"><button id="prev" class="outline">← Previous</button><button id="next">Next step →</button></div></section>
+<section class="panel"><h3>Review weak words</h3><p class="muted tiny">Missed recall items return here. Say the German aloud before revealing.</p><div id="reviewbox"></div></section>
+<section class="panel"><h3>How the voice lesson works</h3><p>You learn the vocabulary and grammar <b>before</b> starting a conversation. ChatGPT begins in English, teaches the German questions, and only then asks you to answer. You can always request a hint.</p><p class="fine">Voice happens in the ChatGPT app, not inside this webpage. This app prepares and copies the lesson brief; you paste it into ChatGPT and switch to Voice. It cannot automatically read ChatGPT's assessment back into your progress.</p></section></div></div></main><div class="toast" id="toast"></div>
 <script>
-const weeks = [
- {phase:"Foundation", theme:"Sounds, greetings & survival German", grammar:"pronunciation, sein/haben, basic word order",
-  speak:"Introduce yourself: name, where you are from, where you live, and why you are learning German.",
-  vocab:[["hello","hallo"],["good morning","guten Morgen"],["good evening","guten Abend"],["goodbye","auf Wiedersehen"],["please","bitte"],["thank you","danke"],["yes","ja"],["no","nein"],["I am","ich bin"],["I have","ich habe"],["I come from","ich komme aus"],["I live in","ich wohne in"]]},
- {phase:"Foundation", theme:"People, numbers, time & questions", grammar:"regular present tense, W-questions, verb in position 2",
-  speak:"Say your age, the time, what day it is, and ask someone three basic questions.",
-  vocab:[["who","wer"],["what","was"],["where","wo"],["when","wann"],["why","warum"],["how","wie"],["today","heute"],["tomorrow","morgen"],["yesterday","gestern"],["now","jetzt"],["hour / o'clock","die Uhr"],["day","der Tag"]]},
- {phase:"Core A1", theme:"Food, cafés & accusative case", grammar:"der/die/das → den in masculine accusative; möchten",
-  speak:"Order a drink and a meal, ask for the bill, and say what you would and would not like.",
-  vocab:[["I would like","ich möchte"],["water","das Wasser"],["beer","das Bier"],["coffee","der Kaffee"],["bread","das Brot"],["food / meal","das Essen"],["the bill","die Rechnung"],["to pay","bezahlen"],["to eat","essen"],["to drink","trinken"],["with","mit"],["without","ohne"]]},
- {phase:"Core A1", theme:"Getting around", grammar:"modal verbs können/müssen; separable verbs; direction phrases",
-  speak:"Ask how to get to the station, when a train leaves, and say where you need to go.",
-  vocab:[["train station","der Bahnhof"],["train","der Zug"],["bus","der Bus"],["to go / drive","fahren"],["to leave / depart","abfahren"],["to arrive","ankommen"],["left","links"],["right","rechts"],["straight ahead","geradeaus"],["ticket","die Fahrkarte"],["I can","ich kann"],["I must","ich muss"]]},
- {phase:"Core A1", theme:"Home & daily routine", grammar:"separable verbs; time-manner-place",
-  speak:"Describe a normal weekday from waking up through going to bed.",
-  vocab:[["to get up","aufstehen"],["to work","arbeiten"],["to sleep","schlafen"],["to cook","kochen"],["to buy","kaufen"],["home","zu Hause"],["apartment","die Wohnung"],["room","das Zimmer"],["morning","der Morgen"],["evening","der Abend"],["always","immer"],["sometimes","manchmal"]]},
- {phase:"Core A1", theme:"Dative essentials", grammar:"mit, bei, nach, von, zu + dative",
-  speak:"Explain who you are traveling with, where you are going, and where you are coming from.",
-  vocab:[["with me","mit mir"],["with you","mit dir"],["to the city","zur Stadt"],["to the station","zum Bahnhof"],["from","von"],["at / with","bei"],["after / to","nach"],["to","zu"],["friend (m.)","der Freund"],["friend (f.)","die Freundin"],["family","die Familie"],["parents","die Eltern"]]},
- {phase:"A2 Build", theme:"Talking about the past", grammar:"Perfekt with haben/sein; common participles",
-  speak:"Tell a short story about what you did yesterday, using at least five past-tense sentences.",
-  vocab:[["I did / made","ich habe gemacht"],["I saw","ich habe gesehen"],["I ate","ich habe gegessen"],["I drank","ich habe getrunken"],["I bought","ich habe gekauft"],["I went / traveled","ich bin gefahren"],["I came","ich bin gekommen"],["I stayed","ich bin geblieben"],["then","dann"],["after that","danach"],["first","zuerst"],["finally","schließlich"]]},
- {phase:"A2 Build", theme:"Plans & future", grammar:"werden + infinitive; wollen; time expressions",
-  speak:"Describe your plans for tomorrow, next weekend, and next year.",
-  vocab:[["I want","ich will"],["I will / become","ich werde"],["later","später"],["next week","nächste Woche"],["next year","nächstes Jahr"],["weekend","das Wochenende"],["to visit","besuchen"],["to learn","lernen"],["to travel","reisen"],["to stay","bleiben"],["maybe","vielleicht"],["probably","wahrscheinlich"]]},
- {phase:"A2 Build", theme:"Opinions & reasons", grammar:"weil/denn; subordinate-clause verb order",
-  speak:"Give your opinion on three things and explain each one with weil.",
-  vocab:[["I think","ich denke"],["I believe","ich glaube"],["in my opinion","meiner Meinung nach"],["because","weil"],["therefore","deshalb"],["but","aber"],["although","obwohl"],["good","gut"],["better","besser"],["important","wichtig"],["interesting","interessant"],["difficult","schwierig"]]},
- {phase:"A2 Build", theme:"Descriptions & comparisons", grammar:"adjective basics; comparative/superlative",
-  speak:"Compare two cities, two foods, or two trips using at least five descriptive sentences.",
-  vocab:[["big","groß"],["small","klein"],["old","alt"],["new","neu"],["beautiful","schön"],["expensive","teuer"],["cheap","billig"],["faster","schneller"],["better","besser"],["more","mehr"],["less","weniger"],["than","als"]]},
- {phase:"B1 Bridge", theme:"Real-world problem solving", grammar:"polite requests; könnte/würde; repair strategies",
-  speak:"Role-play a hotel or travel problem: explain what happened, what you need, and ask for a solution politely.",
-  vocab:[["Could you…?","Könnten Sie…?"],["I would like","ich würde gern"],["problem","das Problem"],["help","die Hilfe"],["reservation","die Reservierung"],["broken","kaputt"],["wrong","falsch"],["I don't understand","ich verstehe nicht"],["Could you repeat that?","Können Sie das wiederholen?"],["more slowly","langsamer"],["exactly","genau"],["of course","natürlich"]]},
- {phase:"B1 Bridge", theme:"Longer conversation", grammar:"connectors; narrative sequencing; question follow-ups",
-  speak:"Speak for five minutes about a trip, hobby, job, or life event. Use zuerst, dann, danach, aber, weil, schließlich.",
-  vocab:[["actually","eigentlich"],["for example","zum Beispiel"],["on the one hand","einerseits"],["on the other hand","andererseits"],["however","allerdings"],["nevertheless","trotzdem"],["experience","die Erfahrung"],["story","die Geschichte"],["reason","der Grund"],["to explain","erklären"],["to mean","bedeuten"],["to remember","sich erinnern"]]},
- {phase:"Consolidation", theme:"90-day consolidation", grammar:"review weak points; spontaneous production",
-  speak:"Give a 7–10 minute self-introduction and conversation-style monologue covering past, present, plans, opinions, and a problem you solved.",
-  vocab:[["to improve","verbessern"],["to practice","üben"],["to understand","verstehen"],["to speak","sprechen"],["to know (fact)","wissen"],["to know (person/place)","kennen"],["still","noch"],["already","schon"],["again","wieder"],["almost","fast"],["enough","genug"],["together","zusammen"]]}
-];
+const U=[["Greetings and names", "You are starting from zero. German has formal and informal ways to say 'you'. Start with informal du.", "For 'I am', say ich bin. For 'my name is', say ich heiße. A normal German statement usually puts the conjugated verb second.", "Hallo! Ich heiße Alex.", "Hello! My name is Alex.", "Introduce yourself and ask another person’s name.", [["Hello", "Hallo"], ["Good morning", "Guten Morgen"], ["Goodbye", "Auf Wiedersehen"], ["please / you're welcome", "bitte"], ["thank you", "danke"], ["yes", "ja"], ["no", "nein"], ["I", "ich"], ["I am", "ich bin"], ["My name is ...", "Ich heiße ..."], ["What is your name? (informal)", "Wie heißt du?"], ["And you?", "Und du?"]], [["My name is Alex.", "Ich heiße Alex."], ["I am Alex.", "Ich bin Alex."], ["Hello!", "Hallo!"], ["And you?", "Und du?"]]], ["Where you are from", "To say where you come from, use ich komme aus. To say where you live, use ich wohne in.", "German verbs change with the subject: ich komme, du kommst. In a statement, the verb stays in second position.", "Ich komme aus den USA. Ich wohne in Virginia.", "I come from the USA. I live in Virginia.", "Say where you come from and where you live.", [["I come from ...", "Ich komme aus ..."], ["the United States", "die USA"], ["from the USA", "aus den USA"], ["I live in ...", "Ich wohne in ..."], ["Germany", "Deutschland"], ["in Germany", "in Deutschland"], ["the city", "die Stadt"], ["where", "wo"], ["where from", "woher"], ["Where are you from?", "Woher kommst du?"], ["Where do you live?", "Wo wohnst du?"], ["I am learning German.", "Ich lerne Deutsch."]], [["I come from the USA.", "Ich komme aus den USA."], ["I live in Virginia.", "Ich wohne in Virginia."], ["I am learning German.", "Ich lerne Deutsch."]]], ["Simple questions", "You can ask questions by starting with a question word or by putting the verb first for a yes/no question.", "Question words: wer (who), was (what), wo (where), wie (how). Yes/no question: Sprichst du Deutsch?", "Sprichst du Deutsch? Ja, ein bisschen.", "Do you speak German? Yes, a little.", "Ask three simple questions and answer them.", [["who", "wer"], ["what", "was"], ["how", "wie"], ["when", "wann"], ["why", "warum"], ["German (language)", "Deutsch"], ["English (language)", "Englisch"], ["a little", "ein bisschen"], ["I understand", "ich verstehe"], ["I do not understand", "ich verstehe nicht"], ["Do you speak German?", "Sprichst du Deutsch?"], ["Please speak slowly.", "Bitte sprich langsam."]], [["Do you speak German?", "Sprichst du Deutsch?"], ["I do not understand.", "Ich verstehe nicht."], ["Please speak slowly.", "Bitte sprich langsam."]]], ["Numbers and time", "Start with numbers 1–10. Learn them by saying them in sequence, then out of sequence.", "For clock time, Wie spät ist es? means 'What time is it?' Es ist drei Uhr = It's three o'clock.", "Es ist drei Uhr.", "It's three o'clock.", "Say your age and tell the time.", [["one", "eins"], ["two", "zwei"], ["three", "drei"], ["four", "vier"], ["five", "fünf"], ["six", "sechs"], ["seven", "sieben"], ["eight", "acht"], ["nine", "neun"], ["ten", "zehn"], ["What time is it?", "Wie spät ist es?"], ["It's three o'clock.", "Es ist drei Uhr."]], [["one", "eins"], ["five", "fünf"], ["ten", "zehn"], ["It's three o'clock.", "Es ist drei Uhr."]]], ["Food and drinks", "German nouns have grammatical genders. Learn each noun with its article: der, die, or das.", "Ich möchte ... means 'I would like ...'. Use it to make polite orders. With masculine accusative nouns, der becomes den.", "Ich möchte einen Kaffee, bitte.", "I'd like a coffee, please.", "Order a drink and something to eat.", [["I would like ...", "Ich möchte ..."], ["water", "das Wasser"], ["a water", "ein Wasser"], ["coffee", "der Kaffee"], ["a coffee (object)", "einen Kaffee"], ["tea", "der Tee"], ["bread", "das Brot"], ["beer", "das Bier"], ["food", "das Essen"], ["to eat", "essen"], ["to drink", "trinken"], ["please", "bitte"]], [["I'd like a coffee, please.", "Ich möchte einen Kaffee, bitte."], ["I'd like a water.", "Ich möchte ein Wasser."], ["I'd like bread.", "Ich möchte Brot."]]], ["At a café", "Useful restaurant language consists of short, reusable chunks. Practice saying each without translating word-by-word.", "Ich hätte gern ... is another polite way to order. Die Rechnung, bitte asks for the bill.", "Die Rechnung, bitte.", "The bill, please.", "Order food, request the bill, and thank the server.", [["the bill", "die Rechnung"], ["The bill, please.", "Die Rechnung, bitte."], ["I would like ...", "Ich hätte gern ..."], ["the menu", "die Speisekarte"], ["menu, please", "Die Speisekarte, bitte."], ["delicious", "lecker"], ["very good", "sehr gut"], ["with", "mit"], ["without", "ohne"], ["to pay", "bezahlen"], ["together", "zusammen"], ["separately", "getrennt"]], [["The bill, please.", "Die Rechnung, bitte."], ["Very good.", "Sehr gut."], ["Together, please.", "Zusammen, bitte."]]], ["Directions", "Direction words are most useful as complete questions. Practice with imaginary locations.", "Wo ist ...? asks where something is. Links, rechts and geradeaus mean left, right and straight ahead.", "Wo ist der Bahnhof?", "Where is the train station?", "Ask where the train station is and understand basic directions.", [["train station", "der Bahnhof"], ["Where is the station?", "Wo ist der Bahnhof?"], ["left", "links"], ["right", "rechts"], ["straight ahead", "geradeaus"], ["near", "in der Nähe"], ["here", "hier"], ["there", "dort"], ["street", "die Straße"], ["train", "der Zug"], ["bus", "der Bus"], ["excuse me", "Entschuldigung"]], [["Where is the station?", "Wo ist der Bahnhof?"], ["Straight ahead.", "Geradeaus."], ["Excuse me.", "Entschuldigung."]]], ["Travel and tickets", "Travel language builds on directions. Listen for platform, departure and arrival.", "German separable verbs split in main clauses: Der Zug fährt um acht Uhr ab. The prefix ab goes to the end.", "Wann fährt der Zug ab?", "When does the train leave?", "Ask about train departure and buy a ticket.", [["ticket", "die Fahrkarte"], ["one ticket", "eine Fahrkarte"], ["departure", "die Abfahrt"], ["arrival", "die Ankunft"], ["platform", "das Gleis"], ["When does the train leave?", "Wann fährt der Zug ab?"], ["to depart", "abfahren"], ["to arrive", "ankommen"], ["to travel by vehicle", "fahren"], ["today", "heute"], ["tomorrow", "morgen"], ["one-way", "einfach"]], [["When does the train leave?", "Wann fährt der Zug ab?"], ["One ticket, please.", "Eine Fahrkarte, bitte."], ["Tomorrow.", "Morgen."]]], ["People and family", "Use simple sentences to talk about people. German nouns are capitalized.", "Mein and meine both mean 'my'. Use mein before masculine/neuter singular nouns and meine before feminine/plural nouns in the nominative.", "Das ist meine Mutter.", "That is my mother.", "Describe your family or two people you know.", [["family", "die Familie"], ["mother", "die Mutter"], ["father", "der Vater"], ["parents", "die Eltern"], ["brother", "der Bruder"], ["sister", "die Schwester"], ["friend (male)", "der Freund"], ["friend (female)", "die Freundin"], ["my (masculine/neuter)", "mein"], ["my (feminine/plural)", "meine"], ["This is ...", "Das ist ..."], ["nice", "nett"]], [["That is my mother.", "Das ist meine Mutter."], ["That is my father.", "Das ist mein Vater."], ["My parents.", "Meine Eltern."]]], ["Work and daily life", "Talk about what you do every day using present-tense verbs.", "In ordinary statements the conjugated verb comes second: Ich arbeite heute. Heute arbeite ich. Both mean 'I work today'.", "Heute arbeite ich.", "Today I am working.", "Describe your typical workday.", [["I work", "ich arbeite"], ["I learn", "ich lerne"], ["I go", "ich gehe"], ["I read", "ich lese"], ["I write", "ich schreibe"], ["I have", "ich habe"], ["today", "heute"], ["every day", "jeden Tag"], ["in the morning", "am Morgen"], ["in the evening", "am Abend"], ["office", "das Büro"], ["at home", "zu Hause"]], [["Today I am working.", "Heute arbeite ich."], ["I am learning German.", "Ich lerne Deutsch."], ["I work at home.", "Ich arbeite zu Hause."]]], ["Home and routine", "German separable verbs let you describe daily routines. Learn the entire sentence.", "Ich stehe um sieben Uhr auf: the prefix auf moves to the end in a normal main clause.", "Ich stehe um sieben Uhr auf.", "I get up at seven o'clock.", "Describe waking up, working, eating, and sleeping.", [["to get up", "aufstehen"], ["I get up", "ich stehe auf"], ["to sleep", "schlafen"], ["I sleep", "ich schlafe"], ["to cook", "kochen"], ["I cook", "ich koche"], ["to buy groceries", "einkaufen"], ["I shop", "ich kaufe ein"], ["room", "das Zimmer"], ["apartment", "die Wohnung"], ["at seven", "um sieben Uhr"], ["late", "spät"]], [["I get up at seven o'clock.", "Ich stehe um sieben Uhr auf."], ["I sleep.", "Ich schlafe."], ["I cook.", "Ich koche."]]], ["What you can and must do", "Modal verbs express ability, obligation, and wishes.", "Ich kann = I can; ich muss = I must; ich will = I want. The second verb stays in infinitive at the end: Ich kann Deutsch sprechen.", "Ich kann ein bisschen Deutsch sprechen.", "I can speak a little German.", "Explain what you can, must, and want to do.", [["I can", "ich kann"], ["I must", "ich muss"], ["I want", "ich will"], ["I may / am allowed", "ich darf"], ["to speak", "sprechen"], ["to learn", "lernen"], ["to go", "gehen"], ["to stay", "bleiben"], ["to help", "helfen"], ["I need help.", "Ich brauche Hilfe."], ["I have time.", "Ich habe Zeit."], ["I have no time.", "Ich habe keine Zeit."]], [["I can speak a little German.", "Ich kann ein bisschen Deutsch sprechen."], ["I must go.", "Ich muss gehen."], ["I want to learn.", "Ich will lernen."]]], ["Past: things you did", "German often uses the Perfekt tense in conversation: a helping verb plus past participle.", "Ich habe gelernt = I learned. Ich bin gefahren = I traveled by vehicle. Motion/change verbs often use sein.", "Ich habe gestern Deutsch gelernt.", "I studied German yesterday.", "Tell someone three things you did yesterday.", [["yesterday", "gestern"], ["I learned", "ich habe gelernt"], ["I worked", "ich habe gearbeitet"], ["I ate", "ich habe gegessen"], ["I drank", "ich habe getrunken"], ["I saw", "ich habe gesehen"], ["I bought", "ich habe gekauft"], ["I went / traveled", "ich bin gefahren"], ["I came", "ich bin gekommen"], ["last week", "letzte Woche"], ["then", "dann"], ["after that", "danach"]], [["I studied German yesterday.", "Ich habe gestern Deutsch gelernt."], ["I worked.", "Ich habe gearbeitet."], ["I ate.", "Ich habe gegessen."]]], ["Plans and reasons", "Connect ideas instead of using only short sentences.", "Weil means because and pushes the conjugated verb to the end: Ich lerne Deutsch, weil ich reisen möchte.", "Ich lerne Deutsch, weil ich reisen möchte.", "I learn German because I want to travel.", "Explain why you're learning German and describe your plans.", [["because", "weil"], ["but", "aber"], ["and", "und"], ["or", "oder"], ["tomorrow", "morgen"], ["next week", "nächste Woche"], ["I plan", "ich plane"], ["I want to travel", "ich möchte reisen"], ["important", "wichtig"], ["interesting", "interessant"], ["difficult", "schwierig"], ["fun", "Spaß"]], [["I learn German because I want to travel.", "Ich lerne Deutsch, weil ich reisen möchte."], ["German is interesting.", "Deutsch ist interessant."], ["Tomorrow I want to travel.", "Morgen möchte ich reisen."]]], ["Problems and opinions", "Polite requests and explanations help you handle real conversations.", "Könnten Sie ...? is a polite request. Ich denke, dass ... introduces an opinion; the conjugated verb moves to the end of the dass clause.", "Könnten Sie das bitte wiederholen?", "Could you please repeat that?", "Explain a problem, ask for help, and express an opinion.", [["Could you please repeat that?", "Könnten Sie das bitte wiederholen?"], ["Please speak more slowly.", "Sprechen Sie bitte langsamer."], ["I think ...", "Ich denke ..."], ["I believe ...", "Ich glaube ..."], ["problem", "das Problem"], ["help", "die Hilfe"], ["wrong", "falsch"], ["correct", "richtig"], ["broken", "kaputt"], ["better", "besser"], ["I don't know.", "Ich weiß nicht."], ["I understand.", "Ich verstehe."]], [["Could you please repeat that?", "Könnten Sie das bitte wiederholen?"], ["I don't know.", "Ich weiß nicht."], ["I understand.", "Ich verstehe."]]]];
+const STAGES=["Learn","Pronounce","Understand","Practice","Listen","Speak & check"];
+const dbKey="german90.v3";
+let state;
+try{state=JSON.parse(localStorage.getItem(dbKey))}catch(e){}
+if(!state||!Array.isArray(state.done)){state={done:[],misses:{},notes:{},quizzes:{},version:3}}
+const save=()=>localStorage.setItem(dbKey,JSON.stringify(state));
+const $=id=>document.getElementById(id);
+let day=1,stage=0,quizIndex=0,quizAnswered=false,listenReveal=false,reviewAnswer=false;
+function lesson(n){let u=Math.floor((n-1)/6),s=(n-1)%6;return {u,s,unit:U[u]}}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(msg){let t=$('toast');t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",2200)}
+function say(t){if(!window.speechSynthesis){toast("Speech not supported in this browser");return}speechSynthesis.cancel();let x=new SpeechSynthesisUtterance(t);x.lang="de-DE";x.rate=.83;speechSynthesis.speak(x)}
+function currentPairs(){let {unit,s}=lesson(day);if(s===0||s===1)return unit[6].slice(0,6);if(s===2||s===3)return unit[6].slice(6,12);return unit[6]}
+function norm(s){return s.trim().toLocaleLowerCase('de-DE').replace(/[.!?…,]/g,'').replace(/\s+/g,' ')}
+function promptForDay(){
+let {u,s,unit}=lesson(day),words=unit[6].map(([en,de])=>`${de} = ${en}`).join('\n'),examples=unit[7].map(([en,de])=>`${de} = ${en}`).join('\n');
+return `You are my patient, rigorous German ORAL tutor. I am a native English speaker learning German from scratch. This is Day ${day}/90, Unit ${u+1}: ${unit[0]}, session ${s+1} (${STAGES[s]}).
+I HAVE STUDIED ONLY THIS MATERIAL FROM THIS UNIT:
+${words}
+EXAMPLES:
+${examples}
+GRAMMAR EXPLANATION I HAVE READ: ${unit[2]}
+TODAY'S GOAL: ${unit[5]}
 
-const dayNames = ["Input","Grammar","Recall","Listening","Conversation","Production","Review"];
-function dayData(day){
-  const week = Math.min(13, Math.ceil(day/7));
-  const w = weeks[week-1];
-  const dow = (day-1)%7;
-  const review = dow===6;
-  const minute = review ? "45–60 min" : "45–55 min";
-  let title = `Week ${week}, Day ${dow+1}: ${review ? "Review & speaking" : w.theme}`;
-  let tasks;
-  if(review){
-    tasks = [
-      ["15 min","Review all vocabulary from this week from English → German."],
-      ["10 min","Re-do the hardest grammar examples without notes."],
-      ["10 min","Listen to beginner German and write down 5 phrases you recognize."],
-      ["10–20 min","Speak continuously on the weekly topic. Do not restart sentences just because they are imperfect."]
-    ];
-  } else {
-    const patterns = [
-      [["10 min","Pronunciation + read every new phrase aloud twice."],["15 min",`Study: ${w.grammar}.`],["10 min","Learn today’s vocabulary from English → German."],["10 min","Make 5 original sentences using today’s material."],["5 min","Speaking mission without notes."]],
-      [["10 min","Recall yesterday’s words before looking at them."],["15 min",`Grammar drill: ${w.grammar}.`],["10 min","Say 10 short sentences aloud."],["10 min","Listen and shadow: repeat immediately after German audio."],["5 min","Speaking mission."]],
-      [["15 min","Vocabulary recall drill; missed words go first."],["10 min","Write 8 English sentences, then translate them into German."],["10 min","Check word order and articles."],["10 min","Read your German aloud twice."],["5 min","Speaking mission from memory."]],
-      [["10 min","Review this week’s vocabulary."],["20 min","Listening: use slow/beginner German. First pass without transcript, second with transcript."],["10 min","Shadow 5–10 sentences."],["10 min","Retell what you understood in very simple German."]],
-      [["10 min","Warm-up: answer basic questions aloud."],["15 min","Prepare 8 questions relevant to this week’s topic."],["20 min","Do today's ChatGPT oral session by voice. Do not read prepared answers."],["5 min","Write down 3 things you could not say and learn them."]],
-      [["10 min","Cold recall: produce this week’s vocabulary from English."],["15 min","Write a 100–150 word mini-story or dialogue."],["10 min","Read it aloud naturally."],["10 min","Put it away and retell the same content without reading."],["5 min","Speaking mission."]]
-    ];
-    tasks = patterns[dow];
-  }
-  const start = ((day-1)%7)*2;
-  const vocab = [];
-  for(let i=0;i<6;i++) vocab.push(w.vocab[(start+i)%w.vocab.length]);
-  return {week,w,dow,title,tasks,minute,vocab};
+IMPORTANT: Start IN ENGLISH. First briefly tell me what we will practice. Teach me the German for your first question, say it slowly, explain its English meaning, and have me repeat it. Only then ask it naturally and wait for my SPOKEN answer. Use short German sentences and vocabulary I have learned; introduce any necessary new word with its English meaning BEFORE asking me to use it. Ask ONE question at a time. Do not launch into an unexplained German monologue. Do not give me the entire answer before I attempt it. If I struggle, offer a small hint in English. After 3–4 turns, briefly explain the 1–2 most important grammar or pronunciation mistakes in English and have me say the correction. Do not overpraise. Revisit mistakes later. Ask for at least 5 original spoken responses, including one surprise variation that stays within learned material. Finish with a clear English assessment of comprehension, grammar, pronunciation, and recall, plus three sentences to practice tomorrow. If audio quality prevents accurate pronunciation assessment, say so instead of guessing. Begin now in English.`;
 }
-
-let state = JSON.parse(localStorage.getItem("german90state")||'{"completed":[],"notes":{},"started":null}');
-if(!state.started){state.started = new Date().toISOString().slice(0,10); save();}
-let currentDay = 1;
-const qs = s=>document.querySelector(s);
-const daySelect=qs("#daySelect");
-for(let i=1;i<=90;i++){let o=document.createElement("option");o.value=i;o.textContent=i;daySelect.appendChild(o);}
-
-function save(){localStorage.setItem("german90state",JSON.stringify(state))}
-function calcSuggestedDay(){
-  const a = new Date(state.started+"T12:00:00"), b=new Date();
-  const diff=Math.floor((b-a)/(1000*60*60*24))+1;
-  return Math.min(90,Math.max(1,diff));
+function drawNav(){
+$('day').innerHTML=Array.from({length:90},(_,i)=>`<option value="${i+1}">Day ${i+1} · ${STAGES[i%6]} · ${esc(U[Math.floor(i/6)][0])}</option>`).join('');
+$('day').value=day;
+$('unitlist').innerHTML=U.map((u,i)=>{let done=state.done.filter(n=>Math.floor((n-1)/6)===i).length;return `<button class="navbtn ${Math.floor((day-1)/6)===i?'active':''}" data-unit="${i}">${i+1}. ${esc(u[0])} <span class="tiny">(${done}/6)</span></button>`}).join('');
+document.querySelectorAll('[data-unit]').forEach(x=>x.onclick=()=>{day=+x.dataset.unit*6+1;stage=0;render()});
+$('completed').textContent=state.done.length;$('progress').style.width=(state.done.length/90*100)+"%";
+$('reviewstats').textContent=Object.values(state.misses).filter(v=>v>0).length+" items to revisit";
 }
-function oralBrief(d){
-  const difficulty = d.week <= 2 ? "absolute beginner (A1-)" : d.week <= 6 ? "beginner (A1)" : d.week <= 10 ? "advanced beginner (A1/A2)" : "A2 learner building toward B1";
-  return `You are my German speaking coach for Day ${currentDay} of my 90-day course.
-
-LEVEL: I am an ${difficulty}.
-THIS WEEK: ${d.w.theme}
-GRAMMAR TARGET: ${d.w.grammar}
-TODAY'S SPEAKING GOAL: ${d.w.speak}
-
-Run this as an ORAL conversation, not a written lesson.
-
-RULES:
-• Start speaking German immediately and keep your German appropriate to my level.
-• Ask ONE question at a time and wait for my spoken answer.
-• Make me retrieve German myself. Do not give me a complete answer before I try.
-• If I hesitate, first give a small German hint. Use English only if I am genuinely stuck.
-• Do not interrupt every minor mistake. Let the conversation flow for 3–5 exchanges, while keeping track of my errors.
-• Then pause for a short correction round in English: quote or closely paraphrase what I said, give the natural German, and briefly explain the important error.
-• Have me SAY the corrected German aloud before continuing.
-• Pay special attention to pronunciation, word order, verb conjugation, articles/case, and whether my vocabulary sounds natural.
-• Recycle constructions I get wrong later in the conversation without announcing that you are testing me.
-• Gradually make questions less predictable so I must understand rather than follow a memorized script.
-• Do not praise every answer. Give specific feedback.
-• If my pronunciation is unclear, model the word slowly, then naturally, and have me repeat it.
-• Keep the active conversation mostly in German. Explanations/corrections may be in English.
-• At the end, give me a concise oral-performance report: comprehension, pronunciation, fluency, vocabulary retrieval, and grammar. For each, tell me what is working and the single most important thing to improve.
-• Finish with 3 German sentences I should be able to produce from memory tomorrow.
-
-Begin now with an easy German question related to today's topic.`;
+function stageHtml(){
+let {unit,s,u}=lesson(day), pairs=currentPairs();
+if(stage===0){
+return `<div class="callout"><b>First, learn — no German assumed.</b><p>${esc(unit[1])}</p></div><h3>Today's phrases (${pairs.length})</h3><p class="fine">Read the English first. Press 🔊 to hear German, then say it aloud. You are not expected to know these yet.</p><div class="wordgrid">${pairs.map(([en,de])=>`<div class="word"><b>${esc(en)}</b><div>${esc(de)}</div><div class="row"><button class="secondary play" data-say="${esc(de)}">🔊 Listen</button></div></div>`).join('')}</div>`;
 }
-
+if(stage===1)return `<h3>Pronunciation lab</h3><p>Listen to each expression, pause, then repeat it <b>three times</b>. Use the speaker buttons. Pay attention to unfamiliar sounds; accurate pronunciation takes time.</p><div class="wordgrid">${pairs.map(([en,de])=>`<div class="word"><div>${esc(de)}</div><small class="muted">${esc(en)}</small><div><button class="secondary play" data-say="${esc(de)}">🔊 Hear it</button></div></div>`).join('')}</div><p class="fine">The browser voice models pronunciation; it does not score your voice. ChatGPT Voice will help with feedback later.</p>`;
+if(stage===2)return `<h3>One small grammar lesson</h3><div class="callout">${esc(unit[2])}</div><div class="example"><strong>${esc(unit[3])}</strong><br>${esc(unit[4])}<br><button class="secondary play" data-say="${esc(unit[3])}" style="margin-top:8px">🔊 Hear example</button></div><p>Read the explanation twice. Say the example aloud. Then try changing one word using today's phrases.</p><p class="fine">You don't have to master every grammatical exception today. Your job is to understand the example and use it correctly.</p>`;
+if(stage===3)return `<h3>Guided recall</h3><p class="muted">Translate the English into German. Type your answer. If you don't know it, press <b>Show answer</b>; missed items will go into Review.</p><div id="quizArea"></div>`;
+if(stage===4)return `<h3>Listening comprehension</h3><p>Press <b>Play German</b> without looking at the text. Try to identify what was said and what it means. Reveal the transcript only after listening.</p><div id="listenArea"></div>`;
+return `<h3>Guided ChatGPT speaking session</h3><div class="callout"><b>You're ready to practice.</b> ChatGPT will start in <b>English</b>, teach each German question before asking it, and gradually remove the hints. This is not a test of material you haven't learned.</div><p><b>Mission:</b> ${esc(unit[5])}</p><div class="row"><button id="copy">1. Copy oral lesson</button><button id="openchat" class="secondary">2. Open ChatGPT</button></div><p class="fine">Paste the copied instructions into a ChatGPT conversation and switch to Voice. If ChatGPT doesn't follow the instructions, say: “Please start in English and teach the question before asking me.”</p><details><summary>Preview full oral-session instructions</summary><div class="prompt" id="fullprompt"></div></details><hr class="divider"><label><b>What was difficult today?</b><textarea id="lessonNotes" placeholder="Example: I mixed up ich bin and ich heiße."></textarea></label><p><button id="complete">✓ Complete this session</button></p>`;
+}
+function drawQuiz(){
+const pairs=currentPairs();let q=pairs[quizIndex%pairs.length];let html=`<div class="quiz"><div class="tiny muted">Question ${quizIndex+1} of ${pairs.length}</div><div class="question">${esc(q[0])}</div><label for="response" class="tiny">Say the German aloud, then type it:</label><input id="response" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your German answer"><div class="row" style="margin-top:9px"><button id="check">Check</button><button id="reveal" class="secondary">Show answer</button></div><div id="feedback"></div><div class="row" style="margin-top:12px"><button id="nextQ" class="secondary" ${quizAnswered?'':'disabled'}>${quizIndex===pairs.length-1?'Finish drill':'Next question →'}</button></div></div>`;
+$('quizArea').innerHTML=html;
+$('check').onclick=()=>{let ans=$('response').value;if(!ans.trim())return;let correct=norm(ans)===norm(q[1]);feedback(correct,q,ans)};
+$('reveal').onclick=()=>feedback(false,q,'');
+$('response').onkeydown=e=>{if(e.key==="Enter")$('check').click()};
+$('nextQ').onclick=()=>{quizIndex++;quizAnswered=false;if(quizIndex>=pairs.length){$('quizArea').innerHTML=`<div class="callout"><b>Drill finished.</b> Move to the next step, or use Review for missed words.</div>`;return}drawQuiz()};
+}
+function feedback(correct,q,answer){
+if(quizAnswered)return;quizAnswered=true;
+let k=q[0]+'→'+q[1];if(!correct)state.misses[k]=(state.misses[k]||0)+1;else if(state.misses[k]>0)state.misses[k]--;
+save();
+$('feedback').innerHTML=`<div class="answer ${correct?'':'bad'}"><b>${correct?'Correct!':'Study this answer:'}</b><br>${esc(q[1])}<br><button class="secondary play" data-say="${esc(q[1])}">🔊 Hear and repeat</button>${answer&&!correct?`<div class="tiny">You entered: ${esc(answer)}</div>`:''}</div>`;
+$('nextQ').disabled=false;attachAudio();drawReview();drawNav();
+}
+function drawListen(){
+let {unit}=lesson(day), q=unit[7][Math.min(2,Math.floor(Math.random()*unit[7].length))];
+$('listenArea').innerHTML=`<div class="quiz"><div class="row"><button id="playListening">🔊 Play German</button><button class="secondary" id="showListening">Reveal transcript & meaning</button></div><div id="listeningResult" class="answer ${listenReveal?'':'hidden'}"><b>${esc(q[1])}</b><br>${esc(q[0])}</div><p class="fine">Replay as often as you need. When ready, say the German back from memory.</p></div>`;
+$('playListening').onclick=()=>say(q[1]);$('showListening').onclick=()=>{$('listeningResult').classList.remove('hidden');listenReveal=true};
+}
+function attachAudio(){document.querySelectorAll('.play').forEach(b=>b.onclick=()=>say(b.dataset.say))}
 function render(){
-  const d=dayData(currentDay);
-  daySelect.value=currentDay;
-  qs("#phaseBadge").textContent=d.w.phase;
-  qs("#lessonTitle").textContent=d.title;
-  qs("#timeLabel").textContent=d.minute;
-  qs("#speakingPrompt").textContent=d.w.speak;
-  qs("#chatPrompt").textContent=oralBrief(d);
-  qs("#notes").value=state.notes[currentDay]||"";
-  qs("#tasks").innerHTML = d.tasks.map((x,i)=>`<label class="task"><input type="checkbox" data-task="${i}"><div><b>${x[0]}</b><br>${x[1]}</div></label>`).join("");
-  qs("#wordList").innerHTML=d.vocab.map(v=>`<div class="word"><b>${v[0]}</b><br><span class="muted">${v[1]}</span> <button class="secondary say" data-text="${v[1]}" style="padding:4px 7px;margin-left:4px">🔊</button></div>`).join("");
-  document.querySelectorAll(".say").forEach(b=>b.onclick=()=>speak(b.dataset.text));
-  const done=state.completed.includes(currentDay);
-  qs("#completeDayBtn").textContent=done?"Completed ✓":"Mark day complete";
-  qs("#completeDayBtn").className=done?"secondary":"good";
-  qs("#doneCount").textContent=state.completed.length;
-  qs("#overallBar").style.width=(state.completed.length/90*100)+"%";
-  resetDrill();
+drawNav();let {u,s,unit}=lesson(day);
+$('unitTag').textContent=`Unit ${u+1} / 15 · ${esc(unit[0])}`;$('sessionNumber').textContent=`Day ${day} / 90`;
+$('title').textContent=STAGES[s]+' · '+unit[0];
+$('goal').textContent=unit[5];
+$('steps').innerHTML=STAGES.map((x,i)=>`<button data-stage="${i}" class="${stage===i?'active':''}">${i+1}. ${x}</button>`).join('');
+document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{stage=+b.dataset.stage;quizIndex=0;quizAnswered=false;listenReveal=false;render()});
+$('stageContent').innerHTML=stageHtml();attachAudio();
+if(stage===3)drawQuiz();if(stage===4)drawListen();
+if(stage===5){
+$('copy').onclick=async()=>{let p=promptForDay();try{await navigator.clipboard.writeText(p);toast('Oral lesson copied. Paste into ChatGPT.')}catch(e){let t=document.createElement('textarea');t.value=p;document.body.append(t);t.select();document.execCommand('copy');t.remove();toast('Lesson copied')}};
+$('openchat').onclick=()=>window.open('https://chatgpt.com/','_blank','noopener');
+$('fullprompt')&&($('fullprompt').textContent=promptForDay());
+$('lessonNotes').value=state.notes[day]||'';$('lessonNotes').oninput=e=>{state.notes[day]=e.target.value;save()};
+$('complete').onclick=()=>{if(!state.done.includes(day)){state.done.push(day);state.done.sort((a,b)=>a-b);save()}toast('Session completed');if(day<90){day++;stage=0;render()}else render()};
 }
-function speak(text){
-  if(!("speechSynthesis" in window)){toast("Speech synthesis is not supported in this browser.");return}
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);u.lang="de-DE";u.rate=.85;speechSynthesis.speak(u);
+$('prev').disabled=(stage===0&&day===1);
+$('next').textContent=stage===5?'Next day →':'Next step →';
+drawReview();
 }
-function toast(t){const x=qs("#toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),1700)}
-daySelect.onchange=e=>{currentDay=+e.target.value;render()}
-qs("#todayBtn").onclick=()=>{currentDay=calcSuggestedDay();render()}
-qs("#notes").oninput=e=>{state.notes[currentDay]=e.target.value;save()}
-qs("#completeDayBtn").onclick=()=>{
-  const i=state.completed.indexOf(currentDay);
-  if(i>=0)state.completed.splice(i,1);else state.completed.push(currentDay);
-  state.completed.sort((a,b)=>a-b);save();render();
+function step(delta){if(delta>0){if(stage<5)stage++;else if(day<90){day++;stage=0}else return}else{if(stage>0)stage--;else if(day>1){day--;stage=5}else return}quizIndex=0;quizAnswered=false;listenReveal=false;render()}
+$('next').onclick=()=>step(1);$('prev').onclick=()=>step(-1);
+$('day').onchange=e=>{day=+e.target.value;stage=0;render()};
+$('continue').onclick=()=>{day=Array.from({length:90},(_,i)=>i+1).find(i=>!state.done.includes(i))||90;stage=0;render()};
+function drawReview(){
+let missed=Object.entries(state.misses).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(!missed.length){$('reviewbox').innerHTML='<p class="muted tiny">Nothing missed yet. Complete recall drills to populate this area.</p>';return}
+let [k,v]=missed[0],parts=k.split('→');$('reviewbox').innerHTML=`<div class="quiz"><div class="tiny">Missed ${v} time(s)</div><div class="question">${esc(parts[0])}</div><button id="reviewReveal" class="secondary">${reviewAnswer?'Hide answer':'Reveal German'}</button><div id="reviewAnswer" class="answer ${reviewAnswer?'':'hidden'}">${esc(parts[1])}</div><div class="row" style="margin-top:10px"><button id="reviewKnown">✓ I recalled it</button><button id="reviewMiss" class="secondary">Still difficult</button></div></div>`;
+$('reviewReveal').onclick=()=>{reviewAnswer=!reviewAnswer;drawReview()};
+$('reviewKnown').onclick=()=>{state.misses[k]=Math.max(0,state.misses[k]-1);reviewAnswer=false;save();drawReview();drawNav()};
+$('reviewMiss').onclick=()=>{state.misses[k]++;reviewAnswer=false;save();drawReview();drawNav()};
 }
-qs("#resetBtn").onclick=()=>{if(confirm("Reset all course progress and notes?")){state={completed:[],notes:{},started:new Date().toISOString().slice(0,10)};save();render();}}
-qs("#speakPromptBtn").onclick=()=>speak(dayData(currentDay).w.speak);
-async function copyBrief(){
-  const t=oralBrief(dayData(currentDay));
-  try{await navigator.clipboard.writeText(t);toast("Session brief copied — paste it into ChatGPT Voice.");return true;}
-  catch(e){toast("Select and copy the session brief manually.");return false;}
-}
-qs("#copyPromptBtn").onclick=copyBrief;
-qs("#openChatBtn").onclick=async()=>{
-  await copyBrief();
-  // Opens ChatGPT; the copied lesson brief is ready to paste into a new voice chat.
-  window.location.href="https://chatgpt.com/";
-};
-
-let deck=[],idx=0,revealed=false,known=0,missed=0;
-function resetDrill(){deck=[];idx=0;revealed=false;known=0;missed=0;qs("#flashCard").innerHTML='Tap “Start drill”';qs("#knowBtn").disabled=true;qs("#missBtn").disabled=true;qs("#drillStats").textContent=""}
-function showCard(){
-  if(idx>=deck.length){qs("#flashCard").innerHTML=`Done.<small>${known} known · ${missed} missed</small>`;qs("#knowBtn").disabled=true;qs("#missBtn").disabled=true;return}
-  revealed=false;
-  qs("#flashCard").innerHTML=`${deck[idx][0]}<small>Say the German aloud, then tap to reveal.</small>`;
-}
-qs("#startDrill").onclick=()=>{
-  deck=[...dayData(currentDay).vocab].sort(()=>Math.random()-.5);idx=0;known=0;missed=0;
-  qs("#knowBtn").disabled=false;qs("#missBtn").disabled=false;showCard();
-}
-qs("#flashCard").onclick=()=>{
-  if(!deck.length||idx>=deck.length)return;
-  revealed=!revealed;
-  qs("#flashCard").innerHTML=revealed?`${deck[idx][1]}<small>${deck[idx][0]}</small>`:`${deck[idx][0]}<small>Say the German aloud, then tap to reveal.</small>`;
-  if(revealed)speak(deck[idx][1]);
-}
-function rate(ok){
-  if(!deck.length||idx>=deck.length)return;
-  ok?known++:missed++;
-  if(!ok)deck.push(deck[idx]); // repeat misses once later
-  idx++; qs("#drillStats").textContent=`Known ${known} · Missed ${missed}`; showCard();
-}
-qs("#knowBtn").onclick=()=>rate(true);qs("#missBtn").onclick=()=>rate(false);
-
-let remaining=300,timerInt=null;
-function timerRender(){const m=String(Math.floor(remaining/60)).padStart(2,"0"),s=String(remaining%60).padStart(2,"0");qs("#timer").textContent=`${m}:${s}`}
-qs("#timerBtn").onclick=()=>{
-  if(timerInt){clearInterval(timerInt);timerInt=null;qs("#timerBtn").textContent="Start";return}
-  qs("#timerBtn").textContent="Pause";
-  timerInt=setInterval(()=>{if(remaining>0){remaining--;timerRender()}else{clearInterval(timerInt);timerInt=null;qs("#timerBtn").textContent="Start";toast("Five minutes done — excellent.");}},1000);
-}
-qs("#timerReset").onclick=()=>{if(timerInt){clearInterval(timerInt);timerInt=null}remaining=300;timerRender();qs("#timerBtn").textContent="Start"}
-
-if("serviceWorker" in navigator && location.protocol.startsWith("http")){
-  navigator.serviceWorker.register("./sw.js").catch(()=>{});
-}
-currentDay=calcSuggestedDay();render();timerRender();
-</script>
-</body>
-</html>
+$('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'german90',state,exported:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='german90-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let obj=JSON.parse(await file.text());if(obj.app!=='german90'||!Array.isArray(obj.state?.done))throw Error('Invalid backup');if(!confirm('Replace progress on this device with the backup?'))return;state=obj.state;save();render();toast('Backup restored')}catch(err){alert('Could not import: '+err.message)}e.target.value=''};
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+render();
+</script></body></html>
